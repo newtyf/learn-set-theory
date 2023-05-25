@@ -9,7 +9,7 @@ import {
 
 Chart.register(VennDiagramController, ArcSlice, LinearScale, Tooltip, Legend);
 Chart.defaults.font.size = 20;
-Chart.defaults.color = '#fff';
+Chart.defaults.color = "#fff";
 const setOne = ref("");
 const setTwo = ref("");
 const showGraphic = ref(false);
@@ -35,11 +35,11 @@ const showVennGraphic = (event) => {
     return;
   }
   showGraphic.value = true;
-  let ctx = document.getElementById("myChart").getContext("2d");
 
   if (!!chart) {
     chart.destroy();
   }
+  let ctx = document.getElementById("myChart").getContext("2d");
 
   const data = extractSets(
     [
@@ -69,6 +69,7 @@ const showVennGraphic = (event) => {
   };
 
   chart = new Chart(ctx, config);
+  chart.canvas.style.display = "block";
 };
 
 onMounted(() => {});
@@ -78,7 +79,7 @@ onMounted(() => {});
   <!-- <Chart :data="config.data" :options="config.options" /> -->
   <h1>Graphic Venn Euler Sets</h1>
   <br />
-  <form action="">
+  <form @submit.prevent="showVennGraphic">
     <label for="set1">Ingrese los valores del conjunto 1: </label>
     <input id="set1" type="text" placeholder="1,2,3,4" v-model="setOne" />
     <br />
@@ -87,14 +88,11 @@ onMounted(() => {});
     <input id="set2" type="text" v-model="setTwo" />
     <br />
     <br />
-    <button type="submit" @click="showVennGraphic">Graficar</button>
+    <button type="submit">Graficar</button>
   </form>
   <div class="graphic">
     <h3>Grafico</h3>
-    <canvas
-      id="myChart"
-      style="{{ showGraphic ? display: block; display: flex; }}"
-    ></canvas>
+    <canvas id="myChart" v-show="showGraphic"></canvas>
   </div>
 </template>
 
