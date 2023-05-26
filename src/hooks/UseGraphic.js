@@ -1,5 +1,5 @@
 import { Chart, LinearScale, Title, Tooltip } from "chart.js";
-import { ArcSlice, VennDiagramController } from "chartjs-chart-venn";
+import { ArcSlice, VennDiagramController, extractSets } from "chartjs-chart-venn";
 import { ref } from "vue";
 
 Chart.register(VennDiagramController, ArcSlice, LinearScale, Tooltip, Title);
@@ -56,7 +56,11 @@ export function useGraphic() {
       throw new Error("data not found");
     }
 
-    config.data = data;
+    const extractData = extractSets(data, {
+      label: title,
+    });
+
+    config.data = extractData;
     config.options.plugins.title.text = title
     if (!chart) {
       chart = new Chart(ctx, config);
