@@ -1,129 +1,169 @@
 <script setup>
-import { onMounted, ref } from "vue";
-import { Chart, LinearScale, Tooltip, Legend } from "chart.js";
-import {
-  VennDiagramController,
-  ArcSlice,
-  extractSets,
-} from "chartjs-chart-venn";
+import { ref } from "vue";
+import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons-vue";
+import { message } from "ant-design-vue";
 
-Chart.register(VennDiagramController, ArcSlice, LinearScale, Tooltip, Legend);
-Chart.defaults.font.size = 20;
-Chart.defaults.color = "#fff";
-const setOne = ref("");
-const setTwo = ref("");
-const showGraphic = ref(false);
+import { extractSets } from "chartjs-chart-venn";
 
-let chart = null;
+import { useGraphic } from "./hooks/graphic";
 
-const extractDataForms = () => {
-  if (setOne.value.length === 0 || setTwo.value.length === 0) {
-    alert("Ingresa los valores del conjunto");
-    return null;
-  }
-
-  const valuesOne = setOne.value.split(",");
-  const valuesTwo = setTwo.value.split(",");
-  return { valuesOne, valuesTwo };
-};
-
-const showVennGraphic = (event) => {
-  event.preventDefault();
-
-  const values = extractDataForms();
-  if (!values) {
-    return;
-  }
-  showGraphic.value = true;
-
-  if (!!chart) {
-    chart.destroy();
-  }
+const { createGraphic, showGraphic } = useGraphic();
+const showVennGraphic = (data, title) => {
   let ctx = document.getElementById("myChart").getContext("2d");
 
-  const data = extractSets(
-    [
-      { label: "Soccer", values: values.valuesOne },
-      { label: "Tennis", values: values.valuesTwo },
-      // { label: "Volleyball", values: ["drew", "glen", "jade"] },
-    ],
-    {
-      label: "Sports",
-    }
-  );
-  const config = {
-    type: "venn",
-    data: data,
-    options: {
-      borderColor: [
-        "rgba(255, 26, 104, 1)",
-        "rgba(54, 162, 235, 1)",
-        "rgba(255, 206, 86, 1)",
-        "rgba(75, 192, 192, 1)",
-        "rgba(153, 102, 255, 1)",
-        "rgba(255, 159, 64, 1)",
-        "rgba(0, 0, 0, 1)",
-      ],
-      backgroundColor: "rgba(255, 26, 104, 0)",
-    },
-  };
+  const extractData = extractSets(data, {
+    label: title,
+  });
 
-  chart = new Chart(ctx, config);
-  chart.canvas.style.display = "block";
+  createGraphic(ctx, extractData, title);
 };
 
-onMounted(() => {});
+const formRef = ref();
+const dynamicValidateForm = ref({
+  title: "",
+  sets: [
+    {
+      label: "",
+      values: "",
+      id: Date.now(),
+    },
+  ],
+});
+
+const removeSet = (item) => {
+  let index = dynamicValidateForm.value.sets.indexOf(item);
+  if (index !== -1) {
+    dynamicValidateForm.value.sets.splice(index, 1);
+  }
+};
+const addSet = () => {
+  if (dynamicValidateForm.value.sets.length == 5) {
+    message.error("Solo puede agregar un maximo de 5 conjuntos");
+    return;
+  }
+
+  dynamicValidateForm.value.sets.push({
+    label: "",
+    values: "",
+    id: Date.now(),
+  });
+};
+const onFinish = (data) => {
+  data.sets.map((item) => (item.values = item.values.split(",")));
+
+  if (data.title.length === 0) {
+    data.title = "Universo";
+  }
+  showVennGraphic(data.sets, data.title);
+};
+
 </script>
 
 <template>
-  <!-- <Chart :data="config.data" :options="config.options" /> -->
-  <h1>Graphic Venn Euler Sets</h1>
-  <br />
-  <form @submit.prevent="showVennGraphic">
-    <label for="set1">Ingrese los valores del conjunto 1: </label>
-    <input id="set1" type="text" placeholder="1,2,3,4" v-model="setOne" />
+  <a-layout>
+    <!-- <Chart :data="config.data" :options="config.options" /> -->
+    <a-layout-header>
+      <a-typography-title
+        style="color: aliceblue; margin-top: 8px"
+        align="center"
+        >Venn Graphic</a-typography-title
+      >
+    </a-layout-header>
     <br />
-    <br />
-    <label for="set2">Ingrese los valores del conjunto 2: </label>
-    <input id="set2" type="text" v-model="setTwo" />
-    <br />
-    <br />
-    <button type="submit">Graficar</button>
-  </form>
-  <div class="graphic">
-    <h3>Grafico</h3>
-    <canvas id="myChart" v-show="showGraphic"></canvas>
-  </div>
+    <a-layout-content style="padding: 20px">
+      <a-row :gutter="30">
+        <a-col :md="10" :xs="24">
+          <a-form
+            ref="formRef"
+            name="dynamic_form_nest_item"
+            :model="dynamicValidateForm"
+            @finish="onFinish"
+            :label-col="{ span: 24 }"
+            :rules={}
+          >
+            <a-form-item name="title">
+              <a-input
+                v-model:value="dynamicValidateForm.title"
+                placeholder="Universo"
+              />
+            </a-form-item>
+            <a-space
+              v-for="(set, index) in dynamicValidateForm.sets"
+              :key="set.id"
+              style="display: flex"
+              align="center"
+            >
+              <a-form-item
+                :name="['sets', index, 'label']"
+                :rules="{
+                  required: true,
+                  message: 'Falta conjunto',
+                }"
+                label="Conjunto:"
+              >
+                <a-input
+                  v-model:value="set.label"
+                  placeholder="Nombre de conjunto"
+                />
+              </a-form-item>
+              <a-form-item
+                :name="['sets', index, 'values']"
+                :rules="{
+                  required: true,
+                  message: 'Faltan valores',
+                }"
+                label="Lista de valores"
+              >
+                <a-input v-model:value="set.values" placeholder="1,2,3,4,5" />
+              </a-form-item>
+              <MinusCircleOutlined
+                style="margin-top: 20px; color: red; font-size: 20px"
+                @click="removeSet(set)"
+              />
+            </a-space>
+            <a-form-item>
+              <a-button type="dashed" block @click="addSet">
+                <PlusOutlined />
+                Agregar conjunto
+              </a-button>
+            </a-form-item>
+            <a-form-item>
+              <a-button type="primary" block html-type="submit"
+                >Graficar</a-button
+              >
+            </a-form-item>
+          </a-form>
+        </a-col>
+        <a-col :md="14" :xs="24">
+          <a-card hoverable>
+            <a-card-meta title="Grafico">
+              <template #description>
+                <a-row v-if="showGraphic">
+                  <a-col
+                    :md="6"
+                    :xs="8"
+                    v-for="(set, index) in dynamicValidateForm.sets"
+                  >
+                    {{
+                      set.values.length > 0 || set.label.length > 0
+                        ? `${set.label} = \{${set.values}\}`
+                        : null
+                    }}
+                  </a-col>
+                </a-row>
+                <a-row v-else> Aun no hay datos para graficar </a-row>
+              </template>
+            </a-card-meta>
+            <template #cover>
+              <canvas id="myChart" v-show="showGraphic"></canvas>
+            </template>
+          </a-card>
+          <canvas id="myChart" v-show="showGraphic"></canvas>
+        </a-col>
+      </a-row>
+      <a-row align="center"> </a-row>
+    </a-layout-content>
+  </a-layout>
 </template>
 
-<style scoped>
-h1 {
-  color: aliceblue;
-}
-label {
-  color: aliceblue;
-}
-p {
-  color: aliceblue;
-}
-.graphic {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  margin-top: 100px;
-  width: 700px;
-  padding: 20px;
-  border-radius: 20px;
-  border: solid 3px rgba(54, 162, 235, 1);
-}
-
-#myChart {
-  padding: 20px;
-}
-
-.graphic h3 {
-  margin-bottom: 30px;
-  color: aliceblue;
-}
-</style>
+<style scoped></style>
