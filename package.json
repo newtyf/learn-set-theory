@@ -12,6 +12,7 @@
     "ant-design-vue": "^3.2.20",
     "chart.js": "^4.3.0",
     "chartjs-chart-venn": "^4.2.0",
+    "openai": "^3.2.1",
     "vue": "^3.2.47"
   },
   "devDependencies": {

@@ -1,11 +1,22 @@
 <script setup>
-import { ref } from "vue";
-import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons-vue";
+import { ref, computed, h } from "vue";
+import {
+  MinusCircleOutlined,
+  PlusOutlined,
+  LoadingOutlined,
+} from "@ant-design/icons-vue";
 import { message } from "ant-design-vue";
 
 import { extractSets } from "chartjs-chart-venn";
 
 import { useGraphic } from "./hooks/graphic";
+
+import { Configuration, OpenAIApi } from "openai";
+const configuration = new Configuration({
+  organization: import.meta.env.VITE_ORG,
+  apiKey: import.meta.env.VITE_APIKEY,
+});
+const openai = new OpenAIApi(configuration);
 
 const { createGraphic, showGraphic } = useGraphic();
 const showVennGraphic = (data, title) => {
@@ -18,7 +29,9 @@ const showVennGraphic = (data, title) => {
   createGraphic(ctx, extractData, title);
 };
 
+const chat_response = ref("");
 const formRef = ref();
+const showLoaderExplanation = ref(false);
 const dynamicValidateForm = ref({
   title: "",
   sets: [
@@ -29,6 +42,41 @@ const dynamicValidateForm = ref({
     },
   ],
 });
+const indicator = h(LoadingOutlined, {
+  style: {
+    fontSize: "36px",
+  },
+});
+
+const formatResponseHtml = computed(() => {
+  let formatted = chat_response.value.replace(/\\n/g, "<br>").toString();
+  return formatted;
+});
+
+const getFormattedSets = () => {
+  let formatSets = "";
+  dynamicValidateForm.value.sets.forEach((value) => {
+    formatSets += `${value.label} = \{${value.values}\}, `;
+  });
+  return formatSets;
+};
+const getEnginesOpenAi = async () => {
+  // delete configuration.baseOptions.headers["User-Agent"];
+  showLoaderExplanation.value = true;
+  const setsInText = getFormattedSets();
+  const completion = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: [
+      {
+        role: "user",
+        content: `Eres un profesor experto en el tema de Teoria de Conjuntos, dime todas las propiedades de este o estos conjuntos, ${setsInText} se conciso pero logrando captar la mayor atencion y entendimiento posible, como si el explicaras a un niño pero no lo trates como tal`,
+      },
+    ],
+    max_tokens: 400,
+  });
+  chat_response.value = completion.data.choices[0].message.content;
+  showLoaderExplanation.value = false;
+};
 
 const removeSet = (item) => {
   let index = dynamicValidateForm.value.sets.indexOf(item);
@@ -56,7 +104,6 @@ const onFinish = (data) => {
   }
   showVennGraphic(data.sets, data.title);
 };
-
 </script>
 
 <template>
@@ -79,7 +126,7 @@ const onFinish = (data) => {
             :model="dynamicValidateForm"
             @finish="onFinish"
             :label-col="{ span: 24 }"
-            :rules={}
+            :rules="{}"
           >
             <a-form-item name="title">
               <a-input
@@ -150,6 +197,33 @@ const onFinish = (data) => {
                         : null
                     }}
                   </a-col>
+                  <br />
+                  <br />
+                  <a-col :span="24"
+                    >No entiendes muy bien? solicita la explicacion de un
+                    experto aqui!</a-col
+                  >
+                  <a-col :span="24"
+                    ><a-button
+                      type="success"
+                      html-type="submit"
+                      @click="getEnginesOpenAi"
+                      style="margin-top: 10px"
+                      >Dame una expliacion</a-button
+                    >
+                  </a-col>
+                  <a-col
+                    v-if="!showLoaderExplanation"
+                    :span="24"
+                    style="margin-top: 10px"
+                  >
+                    <p style="white-space: pre-line; color: #000">
+                      -> {{ formatResponseHtml }}
+                    </p>
+                  </a-col>
+                  <a-col style="margin-top: 10px" v-else>
+                    <a-spin :indicator="indicator" />
+                  </a-col>
                 </a-row>
                 <a-row v-else> Aun no hay datos para graficar </a-row>
               </template>
@@ -161,7 +235,6 @@ const onFinish = (data) => {
           <canvas id="myChart" v-show="showGraphic"></canvas>
         </a-col>
       </a-row>
-      <a-row align="center"> </a-row>
     </a-layout-content>
   </a-layout>
 </template>
