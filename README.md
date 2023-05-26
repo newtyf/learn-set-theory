@@ -1,7 +1,22 @@
-# Vue 3 + Vite
+<h1 align="center"><b>VENN GRAPHIC</b></h1>
+<h6 align="center">web to interact and learn with sets</h6>
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+<div align="center"><img src="public/web.png" alt="web-image" width="400" /></div>
 
-## Recommended IDE Setup
+<!-- <p align="center">Live Site <a href="https://newtpomofocus.netlify.app">Here</a>.</p> -->
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+1. Bootstrapped with [Vite](https://vitejs.dev/).
+
+### 🛠 Built with
+
+- VueJs
+- Ant Design Vue
+- ChartJS
+- OpenAI API
+
+### 💻 Author
+
+- Portfolio - [@newtyf](https://newtyf.com/)
+- Instagram - [@newtyf](https://www.instagram.com/newt_yf/)
+- LinkedIn - [@newtyf](https://www.linkedin.com/in/axel-mu%C3%B1oz/)
+- Frontend Mentor - [@newtyf](https://www.frontendmentor.io/profile/TREz-bits)
