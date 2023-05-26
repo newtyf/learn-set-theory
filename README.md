@@ -1,5 +1,5 @@
 <h1 align="center"><b>VENN GRAPHIC</b></h1>
-<h6 align="center">web to interact and learn with sets</h6>
+<h6 align="center">web to interact and learn sets</h6>
 
 <div align="center"><img src="public/web.png" alt="web-image" width="400" /></div>
 
