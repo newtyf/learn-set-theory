@@ -8,8 +8,8 @@
       >
     </a-layout-header>
     <br />
-    <a-layout-content style="padding: 20px">
-      <a-row :gutter="30">
+    <a-layout-content style="padding: 20px;margin: auto;">
+      <a-row :gutter="30" style="max-width: 1200px;">
         <a-col :md="10" :xs="24">
           <FormSetsVue
             @show-venn-graphic="(sets, title) => showVennGraphic(sets, title)"
@@ -18,7 +18,7 @@
         <a-col :md="14" :xs="24">
           <a-card>
             <template #cover>
-              <canvas id="myChart" v-show="showGraphic"></canvas>
+                <canvas style="margin: auto;" id="myChart" v-show="showGraphic"></canvas>
             </template>
             <a-card-meta title="Grafico">
               <template #description>
