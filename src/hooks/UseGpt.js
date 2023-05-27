@@ -1,4 +1,5 @@
 import { computed, ref } from "vue";
+import { message } from "ant-design-vue";
 
 import { Configuration, OpenAIApi } from "openai";
 const configuration = new Configuration({
@@ -28,20 +29,29 @@ export function useGpt() {
     // delete configuration.baseOptions.headers["User-Agent"];
     showLoaderExplanation.value = true;
     const setsInText = getFormattedSets(sets);
-    const completion = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "user",
-          content: `Eres un profesor experto en el tema de Teoria de Conjuntos, dime todas las propiedades de este o estos conjuntos, ${setsInText} se conciso pero logrando captar la mayor atencion y entendimiento posible, como si el explicaras a un niño pero no lo trates como tal`,
-        },
-      ],
-      max_tokens: 300,
-    });
-    gpt_response.value = completion.data.choices[0].message.content;
+    try {
+      const completion = await openai.createChatCompletion({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "assistant",
+            content: `Hola soy un profesor experto en el tema de Teoria de Conjuntos, capaz de dar explicaciones efectivas y logrando captar tu atencion lo mayor posible`,
+          },
+          {
+            role: "user",
+            content: `Dame una explicacion y dime todas las propiedades de este o estos conjuntos, ${setsInText}`,
+          },
+        ],
+        max_tokens: 500,
+      });
+      gpt_response.value = completion.data.choices[0].message.content;
+    } catch (error) {
+      console.log(error);
+      message.error("Hubo un error al generar tu explicacion, intentalo mas tarde 😿")
+      showLoaderExplanation.value = false;
+    }
     showLoaderExplanation.value = false;
   };
 
-  return {formatResponseHtml, getChatCompletionOpenAi, showLoaderExplanation}
-
+  return { formatResponseHtml, getChatCompletionOpenAi, showLoaderExplanation };
 }

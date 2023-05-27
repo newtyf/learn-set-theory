@@ -88,7 +88,6 @@ const addSet = () => {
   });
 };
 const onFinish = (data) => {
-  console.log(data);
   data.sets.map((item) => (item.values = item.values.split(",")));
 
   if (data.title.length === 0) {

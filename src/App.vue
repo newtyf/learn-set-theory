@@ -52,9 +52,11 @@ import { ref, provide } from "vue";
 
 import FormSetsVue from "./components/FormSetsVue.vue";
 import ExplanatioGptVue from "./components/ExplanatioGpt.vue";
+import { message } from "ant-design-vue";
 
 import { useGraphic } from "./hooks/UseGraphic";
 
+const countGraphicsCreated = ref(0);
 const dynamicValidateForm = ref({
   title: "",
   sets: [
@@ -71,6 +73,12 @@ const { createGraphic, showGraphic } = useGraphic();
 const showVennGraphic = (data, title) => {
   let ctx = document.getElementById("myChart").getContext("2d");
   createGraphic(ctx, data, title);
+  if (countGraphicsCreated.value === 0) {
+    message.success("🎊 Increible creaste tu primer conjunto! 🥳");
+    countGraphicsCreated.value++;
+  } else {
+    message.success("Grafico actualizado 👽")
+  }
 };
 </script>
 
